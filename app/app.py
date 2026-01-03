@@ -1,16 +1,36 @@
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-
+import base64
 from pathlib import Path
+
+def mostrar_gif(path: Path, width="100%"):
+    with open(path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode("utf-8")
+    st.markdown(
+        f"""
+        <img src="data:image/gif;base64,{b64}" style="width:{width};"/>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
 
-st.image(
-    str(GIF_PATH),
-    caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
-    use_container_width=True
+mostrar_gif(
+    GIF_PATH,
+    width="100%"
 )
+
+
+# GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
+
+# st.image(
+#     str(GIF_PATH),
+#     caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
+#     use_container_width=True
+# )
 
 
 st.set_page_config(
