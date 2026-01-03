@@ -18,19 +18,12 @@ def mostrar_gif(path: Path, width="100%"):
 
 GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
 
+st.subheader("🧪 Simulación de deriva de fitosanitarios")
+
 mostrar_gif(
     GIF_PATH,
     width="100%"
 )
-
-
-# GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
-
-# st.image(
-#     str(GIF_PATH),
-#     caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
-#     use_container_width=True
-# )
 
 
 st.set_page_config(
@@ -138,21 +131,6 @@ with tab2:
     Simulación conceptual del efecto del **viento** y la presencia de una  
     **cortina forestal** sobre la deriva de fitosanitarios.
     """)
-
-    with st.container():
-        st.image(
-        "assets/deriva_viento.gif",
-        caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
-        use_container_width=True,
-        key="gif_deriva"
-        )
-
-    # st.image(
-    # "assets/deriva_viento.gif",
-    # caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
-    # use_container_width=True
-    # )
-
 
     st.subheader("🎛️ Parámetros ambientales")
 
