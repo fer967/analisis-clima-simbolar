@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import base64
 from pathlib import Path
 
+st.set_page_config(
+    page_title="Análisis Climático – El Simbolar (Córdoba)",
+    layout="wide"
+)
+
+
 def mostrar_gif(path: Path, width="100%"):
     with open(path, "rb") as f:
         data = f.read()
@@ -15,21 +21,7 @@ def mostrar_gif(path: Path, width="100%"):
         unsafe_allow_html=True
     )
 
-
 GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
-
-st.subheader("🧪 Simulación de deriva de fitosanitarios")
-
-mostrar_gif(
-    GIF_PATH,
-    width="100%"
-)
-
-
-st.set_page_config(
-    page_title="Análisis Climático – El Simbolar (Córdoba)",
-    layout="wide"
-)
 
 st.title("🌦️ Estación Meteorológica – El Simbolar, Córdoba")
 
@@ -45,7 +37,6 @@ tab1, tab2, tab3 = st.tabs([
     "🌱 Análisis agroclimático",
     "ℹ️ Contexto & conclusiones"
 ])
-
 
 
 with tab1:
@@ -84,11 +75,14 @@ with tab1:
 
 with tab2:
     st.header("🌱 Ventanas agroclimáticas")
+    st.subheader("🧪 Simulación de deriva de fitosanitarios")
 
     st.markdown("""
-    Análisis orientado a cultivos extensivos típicos de la zona de  
-    **El Simbolar, Córdoba (Argentina)**.
+    Simulación conceptual del efecto del **viento** y la presencia de una  
+    **cortina forestal** sobre la deriva de fitosanitarios.
     """)
+
+    mostrar_gif(GIF_PATH, width="100%")
 
     cultivo = st.selectbox(
         "Seleccioná cultivo",
@@ -123,14 +117,6 @@ with tab2:
     ax.legend()
 
     st.pyplot(fig)
-
-    #  agrego para gif
-    st.subheader("🧪 Simulación de deriva de fitosanitarios")
-
-    st.markdown("""
-    Simulación conceptual del efecto del **viento** y la presencia de una  
-    **cortina forestal** sobre la deriva de fitosanitarios.
-    """)
 
     st.subheader("🎛️ Parámetros ambientales")
 
