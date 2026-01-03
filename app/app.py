@@ -2,6 +2,17 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
+from pathlib import Path
+
+GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
+
+st.image(
+    str(GIF_PATH),
+    caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
+    use_container_width=True
+)
+
+
 st.set_page_config(
     page_title="Análisis Climático – El Simbolar (Córdoba)",
     layout="wide"
@@ -172,8 +183,6 @@ with tab2:
     - Lotes vecinos
     - Zonas pobladas
     """)
-
-
 
 
 
