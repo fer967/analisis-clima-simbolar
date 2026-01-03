@@ -119,12 +119,21 @@ with tab2:
     **cortina forestal** sobre la deriva de fitosanitarios.
     """)
 
-    st.image(
-    "assets/deriva_viento.gif",
-    caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
-    use_container_width=True
-    #  ***********************
-)
+    with st.container():
+        st.image(
+        "assets/deriva_viento.gif",
+        caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
+        use_container_width=True,
+        key="gif_deriva"
+        )
+
+    # st.image(
+    # "assets/deriva_viento.gif",
+    # caption="Deriva de fitosanitarios con cortina forestal (modelo conceptual)",
+    # use_container_width=True
+    # )
+
+
     st.subheader("🎛️ Parámetros ambientales")
 
     viento = st.slider(
