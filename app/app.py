@@ -9,7 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-
 def mostrar_gif(path: Path, width="100%"):
     with open(path, "rb") as f:
         data = f.read()
@@ -21,9 +20,12 @@ def mostrar_gif(path: Path, width="100%"):
         unsafe_allow_html=True
     )
 
-GIF_PATH = Path(__file__).parent.parent / "assets" / "deriva_viento.gif"
+BASE_DIR = Path(__file__).parent.parent
 
-st.title("🌦️ Estación Meteorológica – El Simbolar, Córdoba")
+GIF_PATH_SIMPLE = BASE_DIR / "assets" / "deriva_viento.gif"
+GIF_PATH_CORTINA = BASE_DIR / "assets" / "deriva_viento_cortina.gif"
+
+st.title("🌦️ Analisis Meteorológico – El Simbolar, Córdoba")
 
 @st.cache_data
 def cargar_datos():
@@ -31,10 +33,10 @@ def cargar_datos():
 df = cargar_datos()
 st.success(f"Dataset cargado: {df.shape[0]} registros")
 
-
-tab1, tab2, tab3 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📊 Clima general",
     "🌱 Análisis agroclimático",
+    "🧪 Simulación ambiental",
     "ℹ️ Contexto & conclusiones"
 ])
 
@@ -72,17 +74,8 @@ with tab1:
     st.pyplot(fig)
 
 
-
 with tab2:
     st.header("🌱 Ventanas agroclimáticas")
-    st.subheader("🧪 Simulación de deriva de fitosanitarios")
-
-    st.markdown("""
-    Simulación conceptual del efecto del **viento** y la presencia de una  
-    **cortina forestal** sobre la deriva de fitosanitarios.
-    """)
-
-    mostrar_gif(GIF_PATH, width="100%")
 
     cultivo = st.selectbox(
         "Seleccioná cultivo",
@@ -178,8 +171,98 @@ with tab2:
     """)
 
 
-
 with tab3:
+    st.header("🧪 Simulación ambiental de deriva de fitosanitarios")
+
+    st.markdown("""
+    Modelo conceptual para visualizar cómo **el viento** y la **altura de la cortina forestal**
+    influyen en la deriva de fitosanitarios.
+    """)
+
+    st.subheader("🎛️ Parámetros de simulación")
+
+    st.markdown("""
+    👉 **Cómo usar la simulación**
+
+    - Mové el **slider de viento** para aumentar o reducir la fuerza que empuja las partículas.
+    - Ajustá la **altura de la cortina forestal** para ver su capacidad de contención.
+    - Observá cómo cambia el **índice de cruce** y la animación:
+
+    🟢 Con viento bajo y cortina alta → la deriva se contiene  
+    🔴 Con viento alto y cortina baja → parte del fitosanitario atraviesa la cortina
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        viento_sim = st.slider(
+            "🌬️ Velocidad del viento (km/h)",
+            min_value=0.0,
+            max_value=25.0,
+            value=8.0,
+            step=0.5
+        )
+
+    with col2:
+        altura_cortina = st.slider(
+            "🌲 Altura relativa de la cortina (%)",
+            min_value=10,
+            max_value=100,
+            value=60,
+            step=5
+        )
+
+# -----------------------------
+# Modelo conceptual corregido
+# -----------------------------
+    viento_norm = viento_sim / 25
+    altura_norm = altura_cortina / 100
+
+    indice_cruce = viento_norm * (1 - altura_norm)
+
+    st.metric("Índice conceptual de cruce", f"{indice_cruce:.2f}")
+
+    st.caption(
+    f"Viento relativo: {viento_norm:.2f} · "
+    f"Eficiencia de la cortina: {altura_norm:.2f}"
+    )
+
+    st.divider()
+
+    if indice_cruce < 0.3:
+        st.success("🟢 Deriva contenida — Cortina efectiva")
+
+        mostrar_gif(
+            GIF_PATH_SIMPLE,
+            width="100%"
+        )
+
+    else:
+        st.error("🔴 Deriva cruzando la cortina")
+
+        mostrar_gif(
+            GIF_PATH_CORTINA,
+            width="100%"
+        )
+
+    st.markdown("""
+        ⚠️ El viento supera la capacidad de contención  
+        ⚠️ Parte del fitosanitario atraviesa la cortina  
+        ❗ Riesgo para:
+        - 🏠 Viviendas
+        - 🐄 Animales
+        - 🌊 Cuerpos de agua
+        """)
+
+    st.info("""
+    📌 **Nota técnica**  
+    Esta simulación es **conceptual y educativa**.  
+    No reemplaza estudios de deriva certificados, pero permite
+    **comprender visualmente** la importancia de las cortinas forestales.
+    """)
+
+
+with tab4:
     st.header("ℹ️ Contexto y conclusiones")
 
     st.markdown("""
@@ -198,6 +281,7 @@ with tab3:
     - Evitar aplicaciones con viento > 15 km/h
     - Implementar **cortinas forestales** para reducir deriva
     """)
+
 
 
 # Para ejecutar la aplicación:    streamlit run app/app.py
