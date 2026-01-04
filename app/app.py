@@ -3,6 +3,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import base64
 from pathlib import Path
+import numpy as np
 
 st.set_page_config(
     page_title="Análisis Climático – El Simbolar (Córdoba)",
@@ -40,48 +41,37 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "ℹ️ Contexto & conclusiones"
 ])
 
-
 with tab1:
     st.header("📊 Comportamiento climático anual")
-
     col1, col2 = st.columns(2)
-
     col1.metric(
         "🌡️ Temp. media (°C)",
         f"{df['temperatura_c'].mean():.1f}"
     )
-
     col2.metric(
         "💧 Humedad media (%)",
         f"{df['humedad_pct'].mean():.1f}"
     )
-
     st.divider()
-
     variable = st.selectbox(
         "Seleccioná la variable",
         ["temperatura_c", "humedad_pct"]
     )
-
     df_plot = df.groupby("mes")[variable].mean()
-
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(df_plot.index, df_plot.values, marker="o")
     ax.set_xlabel("Mes")
     ax.set_ylabel(variable)
     ax.set_title(f"Evolución mensual de {variable}")
-
     st.pyplot(fig)
 
 
 with tab2:
     st.header("🌱 Ventanas agroclimáticas")
-
     cultivo = st.selectbox(
         "Seleccioná cultivo",
         ["Soja", "Maíz", "Trigo"]
     )
-
     if cultivo == "Soja":
         meses = [10, 11, 12]
         t_min, t_max = 15, 30
@@ -91,15 +81,12 @@ with tab2:
     else:  # Trigo
         meses = [6, 7, 8]
         t_min, t_max = 5, 20
-
     df_cultivo = (
         df[df["mes"].isin(meses)]
         .groupby("mes")["temperatura_c"]
         .mean()
     )
-
     st.success(f"Ventana típica de siembra: meses {meses}")
-
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(df_cultivo.index, df_cultivo.values, marker="o", label="Temp media")
     ax.axhline(t_min, linestyle="--", alpha=0.6, label="Temp mínima")
@@ -108,92 +95,25 @@ with tab2:
     ax.set_ylabel("Temperatura (°C)")
     ax.set_title(f"Temperatura durante ventana de {cultivo}")
     ax.legend()
-
     st.pyplot(fig)
-
-    st.subheader("🎛️ Parámetros ambientales")
-
-    viento = st.slider(
-    "Velocidad del viento (km/h)",
-    min_value=0.0,
-    max_value=25.0,
-    value=8.0,
-    step=0.5
-    )
-
-    temperatura = st.slider(
-    "Temperatura ambiente (°C)",
-    min_value=5.0,
-    max_value=40.0,
-    value=25.0,
-    step=0.5
-    )
-
-    humedad = st.slider(
-    "Humedad relativa (%)",
-    min_value=20,
-    max_value=100,
-    value=60,
-    step=5
-    )
-
-    factor_viento = viento / 20
-    factor_temp = max(0, (temperatura - 20) / 20)
-    factor_humedad = max(0, (60 - humedad) / 60)
-
-    riesgo_deriva = factor_viento + factor_temp + factor_humedad
-    riesgo_deriva = min(riesgo_deriva, 1.0)
-
-    st.subheader("📊 Riesgo estimado de deriva")
-
-    st.metric("Índice de riesgo de deriva", f"{riesgo_deriva:.2f}")
-
-    if riesgo_deriva < 0.3:
-        st.success("🟢 Riesgo BAJO — Condiciones adecuadas")
-    elif riesgo_deriva < 0.6:
-        st.warning("🟡 Riesgo MODERADO — Aplicar con precaución")
-    else:
-        st.error("🔴 Riesgo ALTO — No se recomienda aplicar")
-
-    st.info("""
-    **Interpretación técnica**
-
-    El riesgo de deriva aumenta con:
-    - Mayor velocidad del viento
-    - Temperaturas elevadas (mayor evaporación)
-    - Baja humedad relativa
-
-    Las **cortinas forestales** actúan como barrera física,
-    reduciendo la deriva y protegiendo:
-    - Espejos de agua
-    - Lotes vecinos
-    - Zonas pobladas
-    """)
-
 
 with tab3:
     st.header("🧪 Simulación ambiental de deriva de fitosanitarios")
-
     st.markdown("""
     Modelo conceptual para visualizar cómo **el viento** y la **altura de la cortina forestal**
     influyen en la deriva de fitosanitarios.
     """)
-
     st.subheader("🎛️ Parámetros de simulación")
-
     st.markdown("""
     👉 **Cómo usar la simulación**
-
     - Mové el **slider de viento** para aumentar o reducir la fuerza que empuja las partículas.
     - Ajustá la **altura de la cortina forestal** para ver su capacidad de contención.
     - Observá cómo cambia el **índice de cruce** y la animación:
-
+    
     🟢 Con viento bajo y cortina alta → la deriva se contiene  
     🔴 Con viento alto y cortina baja → parte del fitosanitario atraviesa la cortina
     """)
-
     col1, col2 = st.columns(2)
-
     with col1:
         viento_sim = st.slider(
             "🌬️ Velocidad del viento (km/h)",
@@ -202,7 +122,6 @@ with tab3:
             value=8.0,
             step=0.5
         )
-
     with col2:
         altura_cortina = st.slider(
             "🌲 Altura relativa de la cortina (%)",
@@ -211,15 +130,12 @@ with tab3:
             value=60,
             step=5
         )
-
-# -----------------------------
-# Modelo conceptual corregido
-# -----------------------------
+        
     viento_norm = viento_sim / 25
     altura_norm = altura_cortina / 100
-
+    
     indice_cruce = viento_norm * (1 - altura_norm)
-
+    porcentaje_cruce = int(indice_cruce * 100)
     st.metric("Índice conceptual de cruce", f"{indice_cruce:.2f}")
 
     st.caption(
@@ -230,7 +146,16 @@ with tab3:
     st.divider()
 
     if indice_cruce < 0.3:
-        st.success("🟢 Deriva contenida — Cortina efectiva")
+        st.success("🟢 Deriva mayormente contenida — Cortina efectiva")
+        st.caption(
+            "Una fracción muy pequeña del material fino puede atravesar la cortina."
+        )
+
+        st.metric(
+            "Fitosanitario que atraviesa la cortina",
+            f"{porcentaje_cruce} %"
+        )
+        st.progress(min(porcentaje_cruce / 100, 1.0))
 
         mostrar_gif(
             GIF_PATH_SIMPLE,
@@ -238,7 +163,16 @@ with tab3:
         )
 
     else:
-        st.error("🔴 Deriva cruzando la cortina")
+        st.error("🔴 Deriva significativa atravesando la cortina")
+        st.caption(
+            "Una proporción relevante del material logra superar la barrera vegetal."
+        )
+
+        st.metric(
+            "Fitosanitario que atraviesa la cortina",
+            f"{porcentaje_cruce} %"
+        )
+        st.progress(porcentaje_cruce / 100)
 
         mostrar_gif(
             GIF_PATH_CORTINA,
@@ -253,7 +187,6 @@ with tab3:
         - 🐄 Animales
         - 🌊 Cuerpos de agua
         """)
-
     st.info("""
     📌 **Nota técnica**  
     Esta simulación es **conceptual y educativa**.  
@@ -262,29 +195,148 @@ with tab3:
     """)
 
 
+    st.subheader("🌡️💧 Impacto ambiental en la eficiencia de aplicación")
+
+    st.markdown("""
+    Además de la deriva, la **temperatura** y la **humedad relativa**
+    influyen directamente en la **eficiencia de la aplicación fitosanitaria**.
+
+    Los siguientes gráficos muestran relaciones **conceptuales** ampliamente aceptadas
+    en buenas prácticas agrícolas.
+    """)
+
+    temp = np.linspace(5, 40, 300)
+    ef_temp = np.exp(-0.03 * (temp - 22)**2)
+    fig, ax = plt.subplots()
+    ax.plot(temp, ef_temp, linewidth=2, label="Eficiencia relativa")
+# Zonas
+    ax.axvspan(5, 12, alpha=0.18, color="red", label="Zona crítica")
+    ax.axvspan(30, 40, alpha=0.18, color="red")
+    ax.axvspan(12, 18, alpha=0.25, color="gold", label="Precaución")
+    ax.axvspan(18, 25, alpha=0.30, color="green", label="Zona óptima")
+    ax.axvline(22, linestyle="--", alpha=0.6)
+    ax.set_xlabel("Temperatura (°C)")
+    ax.set_ylabel("Eficiencia relativa")
+    ax.set_title("Efecto de la temperatura en la eficiencia de aplicación")
+    ax.set_ylim(0, 1)
+    handles, labels = ax.get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys())
+    st.pyplot(fig)
+
+    hum = np.linspace(20, 100, 300)
+
+# Aumento de eficiencia con la humedad
+    ef_sube = 1 - np.exp(-0.06 * (hum - 35))
+
+# Penalización por humedad excesiva (>80%)
+    penalizacion = np.exp(-0.04 * np.maximum(hum - 80, 0))
+
+# Eficiencia final
+    ef_hum = ef_sube * penalizacion
+    ef_hum = np.clip(ef_hum, 0, 1)
+
+    fig, ax = plt.subplots()
+    ax.plot(hum, ef_hum, linewidth=2, label="Eficiencia relativa")
+
+# Zonas
+    ax.axvspan(20, 40, alpha=0.18, color="red", label="Zona crítica (evaporación)")
+    ax.axvspan(40, 60, alpha=0.25, color="gold", label="Precaución")
+    ax.axvspan(60, 80, alpha=0.30, color="green", label="Zona óptima")
+    ax.axvspan(80, 100, alpha=0.22, color="gold", label="Exceso de humedad")
+
+    ax.set_xlabel("Humedad relativa (%)")
+    ax.set_ylabel("Eficiencia relativa")
+    ax.set_title("Efecto de la humedad en la eficiencia de aplicación")
+    ax.set_ylim(0, 1)
+
+# Leyenda sin duplicados
+    handles, labels = ax.get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys())
+
+    st.pyplot(fig)
+
+
+    st.info("""
+    📌 **Interpretación técnica**
+    
+    🟩 Zona óptima  
+    Condiciones ideales para maximizar eficiencia y minimizar pérdidas.
+    
+    🟨 Precaución  
+    Aplicación posible, pero con mayor riesgo de evaporación o menor absorción.
+    
+    🟥 Zona crítica  
+    No se recomienda aplicar por alta pérdida o baja eficacia.
+    """)
+
+
 with tab4:
     st.header("ℹ️ Contexto y conclusiones")
 
     st.markdown("""
-    ### 📍 Contexto
-    - Ubicación: El Simbolar, Córdoba, Argentina  
-    - Clima templado subhúmedo  
-    - Producción agrícola extensiva  
+    ## 📍 Contexto general
+    - **Ubicación:** El Simbolar, Córdoba, Argentina  
+    - **Clima:** Templado subhúmedo  
+    - **Sistema productivo:** Agricultura extensiva  
 
-    ### 📌 Hallazgos clave
-    - Temperaturas máximas concentradas en verano
-    - Humedad variable durante períodos críticos
-    - El viento puede impactar aplicaciones fitosanitarias
+    Este análisis integra **datos climáticos históricos** con
+    **modelos conceptuales de simulación**, orientados a la **toma de decisiones agroambientales**.
+    """)
 
-    ### ✅ Recomendaciones
-    - Ajustar fechas de siembra según ventana térmica
-    - Evitar aplicaciones con viento > 15 km/h
-    - Implementar **cortinas forestales** para reducir deriva
+    st.markdown("""
+    ## 📌 Hallazgos clave
+    - 🌡️ Las **temperaturas máximas** se concentran en los meses estivales, afectando el rendimiento de aplicaciones.
+    - 💧 La **humedad relativa** presenta alta variabilidad en períodos críticos.
+    - 🌬️ El **viento** es el principal factor de riesgo en la deriva de fitosanitarios.
+    - 🌲 La **altura y densidad de la cortina forestal** influyen directamente en la contención de la deriva.
+    """)
+
+    st.markdown("""
+    ## 🧪 Aportes de la simulación ambiental
+    - Permite **visualizar el cruce o contención** de fitosanitarios según:
+        - Velocidad del viento  
+        - Altura relativa de la cortina  
+    - Refuerza el concepto de **riesgo hacia zonas sensibles**:
+        - 🏠 Viviendas  
+        - 🐄 Animales  
+        - 🌊 Cuerpos de agua  
+    - Complementa el análisis numérico con una **lectura visual e intuitiva**.
+    """)
+
+    st.markdown("""
+    ## 🌡️ Influencia de temperatura y humedad
+    - **Temperaturas elevadas** incrementan la evaporación → menor eficiencia de aplicación.
+    - **Baja humedad relativa** aumenta el riesgo de deriva.
+    - Existen **zonas óptimas**, de **precaución** y **críticas**, claramente identificables en los gráficos.
+    """)
+
+    st.markdown("""
+    ## ✅ Recomendaciones prácticas
+    - Ajustar **fechas de siembra** según ventanas térmicas del cultivo.
+    - Evitar aplicaciones con:
+        - Viento > **15 km/h**
+        - Temperaturas elevadas
+        - Humedad relativa baja
+    - Implementar y mantener **cortinas forestales** como barrera ambiental.
+    """)
+
+    st.info("""
+    📌 **Conclusión final**
+
+    La combinación de **datos climáticos**, **visualizaciones** y **simulaciones conceptuales**
+    permite comprender de forma clara cómo las variables ambientales
+    impactan en la eficiencia y seguridad de las aplicaciones agrícolas.
+
+    Este enfoque no reemplaza estudios técnicos formales,
+    pero constituye una **herramienta educativa y de apoyo a la toma de decisiones**.
     """)
 
 
 
-# Para ejecutar la aplicación:    streamlit run app/app.py
+
+
 
 
 
