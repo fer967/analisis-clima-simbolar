@@ -34,14 +34,26 @@ def cargar_datos():
 df = cargar_datos()
 st.success(f"Dataset cargado: {df.shape[0]} registros")
 
-tab1, tab2, tab3, tab4 = st.tabs([
-    "📊 Clima general",
-    "🌱 Análisis agroclimático",
-    "🧪 Simulación ambiental",
-    "ℹ️ Contexto & conclusiones"
-])
+seccion = st.radio(
+    "📂 Navegación",
+    [
+        "🌤️ Clima general",
+        "🌱 Análisis agroclimático",
+        "🧪 Simulación de deriva",
+        "ℹ️ Contexto y conclusiones"
+    ],
+    horizontal=True
+)
 
-with tab1:
+
+# tab1, tab2, tab3, tab4 = st.tabs([
+#     "📊 Clima general",
+#     "🌱 Análisis agroclimático",
+#     "🧪 Simulación ambiental",
+#     "ℹ️ Contexto & conclusiones"
+# ])
+
+if seccion == "🌤️ Clima general":
     st.header("📊 Comportamiento climático anual")
     col1, col2 = st.columns(2)
     col1.metric(
@@ -66,7 +78,7 @@ with tab1:
     st.pyplot(fig)
 
 
-with tab2:
+elif seccion == "🌱 Análisis agroclimático":
     st.header("🌱 Ventanas agroclimáticas")
     cultivo = st.selectbox(
         "Seleccioná cultivo",
@@ -97,7 +109,7 @@ with tab2:
     ax.legend()
     st.pyplot(fig)
 
-with tab3:
+elif seccion == "🧪 Simulación de deriva":
     st.header("🧪 Simulación ambiental de deriva de fitosanitarios")
     st.markdown("""
     Modelo conceptual para visualizar cómo **el viento** y la **altura de la cortina forestal**
@@ -272,7 +284,7 @@ with tab3:
     """)
 
 
-with tab4:
+elif seccion == "ℹ️ Contexto y conclusiones":
     st.header("ℹ️ Contexto y conclusiones")
 
     st.markdown("""
