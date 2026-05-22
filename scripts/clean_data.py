@@ -10,12 +10,6 @@ def clean_data():
     # eliminar nulos
     df = df.dropna()
 
-    # convertir fecha
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-
-    # crear columna mes
-    df["mes"] = df["timestamp"].dt.month
-
     # guardar limpio
     output_path = "data/processed/clima_simbolar_clean.csv"
 

@@ -5,6 +5,8 @@ import base64
 from pathlib import Path
 import numpy as np
 
+from sqlalchemy import create_engine
+
 st.set_page_config(
     page_title="Análisis Climático – El Simbolar (Córdoba)",
     layout="wide"
@@ -30,13 +32,21 @@ st.title("🌦️ Analisis Meteorológico – El Simbolar, Córdoba")
 
 @st.cache_data
 def cargar_datos():
-    return pd.read_csv("data/processed/clima_simbolar_2023_clean.csv")
+    engine = create_engine(
+        "postgresql://airflow:airflow@localhost:5433/airflow"
+    )
+    query = "SELECT * FROM resumen_climatico"
+    df = pd.read_sql(query, engine)
+    return df
 df = cargar_datos()
-st.success(f"Dataset cargado: {df.shape[0]} registros")
+st.success(
+    f"Dataset cargado desde PostgreSQL: {df.shape[0]} registros"
+)
 
 seccion = st.radio(
     "📂 Navegación",
     [
+        "📦 Monitoreo ETL",
         "🌤️ Clima general",
         "🌱 Análisis agroclimático",
         "🧪 Simulación de deriva",
@@ -45,13 +55,48 @@ seccion = st.radio(
     horizontal=True
 )
 
+if seccion == "📦 Monitoreo ETL":
+    st.header("📦 Monitoreo del pipeline ETL")
+    st.markdown("""
+    Esta sección muestra métricas operacionales del pipeline
+    construido con Apache Airflow + PostgreSQL.
+    """)
+    # convertir fecha
+    df["fecha_carga"] = pd.to_datetime(df["fecha_carga"])
+    # métricas
+    ultima_carga = df["fecha_carga"].max()
+    total_registros = len(df)
+    ejecuciones = df["fecha_carga"].dt.floor("s").nunique()
+    col1, col2, col3 = st.columns(3)
+    col1.metric(
+        "🕒 Última carga ETL",
+        str(ultima_carga)
+    )
+    col2.metric(
+        "📄 Registros almacenados",
+        total_registros
+    )
+    col3.metric(
+        "⚙️ Ejecuciones históricas",
+        ejecuciones
+    )
+    st.divider()
+    st.subheader("📈 Registros cargados por ejecución")
+    etl_por_carga = (
+        df.groupby(df["fecha_carga"].dt.floor("s"))
+        .size()
+    )
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.plot(
+        etl_por_carga.index,
+        etl_por_carga.values,
+        marker="o"
+    )
+    ax.set_xlabel("Fecha de carga")
+    ax.set_ylabel("Cantidad de registros")
+    ax.set_title("Histórico de ejecuciones ETL")
+    st.pyplot(fig)
 
-# tab1, tab2, tab3, tab4 = st.tabs([
-#     "📊 Clima general",
-#     "🌱 Análisis agroclimático",
-#     "🧪 Simulación ambiental",
-#     "ℹ️ Contexto & conclusiones"
-# ])
 
 if seccion == "🌤️ Clima general":
     st.header("📊 Comportamiento climático anual")
