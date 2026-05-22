@@ -30,18 +30,35 @@ GIF_PATH_CORTINA = BASE_DIR / "assets" / "deriva_viento_cortina.gif"
 
 st.title("🌦️ Analisis Meteorológico – El Simbolar, Córdoba")
 
+
 @st.cache_data
 def cargar_datos():
-    engine = create_engine(
-        "postgresql://airflow:airflow@localhost:5433/airflow"
+
+    df = pd.read_csv(
+        "data/processed/resumen_mensual.csv"
     )
-    query = "SELECT * FROM resumen_climatico"
-    df = pd.read_sql(query, engine)
+
     return df
 df = cargar_datos()
 st.success(
-    f"Dataset cargado desde PostgreSQL: {df.shape[0]} registros"
+    f"Dataset cargado: {df.shape[0]} registros"
 )
+
+
+# def cargar_datos():
+#     engine = create_engine(
+#         "postgresql://airflow:airflow@localhost:5433/airflow"
+#     )
+#     query = """
+#     SELECT *
+#     FROM resumen_climatico
+#     """
+#     df = pd.read_sql(query, engine)
+#     return df
+# df = cargar_datos()
+# st.success(
+#     f"Dataset cargado desde PostgreSQL: {df.shape[0]} registros"
+# )
 
 seccion = st.radio(
     "📂 Navegación",
