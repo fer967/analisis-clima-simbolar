@@ -40,6 +40,8 @@ def cargar_datos():
 
     return df
 df = cargar_datos()
+# fecha simulada de carga ETL
+df["fecha_carga"] = pd.Timestamp.now()
 st.success(
     f"Dataset cargado: {df.shape[0]} registros"
 )
@@ -72,6 +74,7 @@ seccion = st.radio(
     horizontal=True
 )
 
+
 if seccion == "📦 Monitoreo ETL":
     st.header("📦 Monitoreo del pipeline ETL")
     st.markdown("""
@@ -79,7 +82,7 @@ if seccion == "📦 Monitoreo ETL":
     construido con Apache Airflow + PostgreSQL.
     """)
     # convertir fecha
-    df["fecha_carga"] = pd.to_datetime(df["fecha_carga"])
+    df["fecha_carga"] = pd.to_datetime(df["fecha_carga"])  
     # métricas
     ultima_carga = df["fecha_carga"].max()
     total_registros = len(df)
